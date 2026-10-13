@@ -1,49 +1,74 @@
 # WooCommerce Checkout and Freight Engineering
 
-A consolidated engineering case covering asynchronous checkout behavior and a guarded workbook-to-freight data pipeline.
+A consolidated engineering case covering partial checkout state and guarded freight-configuration changes.
 
-**Technical showcase · Documentation only · Anonymized**
+**Technical showcase · Original runnable mechanism demo · Anonymized**
 
-WordPress | WooCommerce | PHP | JavaScript | MySQL | XLSX
+PHP 8.2+ | WooCommerce integration concepts | Deterministic state transitions
+
+## What is runnable here
+
+This public repository includes newly authored, dependency-free PHP code demonstrating two related mechanisms:
+
+1. a pure partial-checkout request reducer that distinguishes omitted fields from explicit clears, preserves unrelated session state, and cleans up only owned dependent keys;
+2. an in-memory freight preview/apply service with strict normalized fixtures, business-key deduplication, integer synthetic charge units, deterministic hashes, a private frozen-plan registry, stale/replay refusal, and success-only backup/audit mutation.
+
+The demo is educational and synthetic. It is not original client code and does not parse real workbooks, integrate with shipping/payment services, or submit checkout/orders.
+
+## Quickstart
+
+```bash
+php tests/run.php
+php tests/run.php freight
+php demo/run.php
+```
+
+The optional test argument filters names by substring. No match exits with status `2`.
 
 ## Engineering problem
 
-Checkout fragments, partial requests and session values can disagree about the active state. Freight data adds a separate operational concern: an import should be previewable and recoverable before it changes the configuration used by checkout.
+Checkout fragments and partial requests can disagree with persisted session state. Treating an omitted field as empty can silently erase a valid choice, while broad session cleanup can damage unrelated state.
 
-## Implementation scope
+Freight changes have a related state-integrity problem: validation and preview must bind the exact proposed rows to the exact predecessor state. Apply must refuse stale, replayed, or foreign plans and must not create misleading backup/audit evidence when no mutation succeeds.
 
-- Preserved checkout field schemas and synchronized state-dependent headings across asynchronous fragment updates.
-- Distinguished omitted request fields from explicit clearing, retained delivery state and limited cleanup to owned session keys.
-- Built a workbook analysis and preview workflow with mapping checks before applying freight configuration.
-- Implemented explicit reconciliation modes, business-key deduplication, batch staging, row-hash checks, backups and audit events.
-- Used an environment-gated quarantine layer to suppress WordPress-level mail, outbound HTTP and background jobs during isolated staging work.
+## Demonstrated contracts
+
+- Full patch validation before checkout state transition.
+- Omission versus explicit `null` clear using field-presence semantics.
+- Owned-key cleanup without rebuilding the session.
+- Exact freight fields/types and cross-field validation.
+- IDs retained as strings, including leading zeroes.
+- Business key `(zone_id, service_code)` and fail-closed duplicate handling.
+- Deterministic lexical ordering and SHA-256 content identity.
+- Explicit **merge-only** reconciliation; no hidden replace/delete behavior.
+- Opaque single-use plans backed by a private in-memory registry.
+- Predecessor check before state, backup, or audit changes.
 
 ## Architecture at a glance
 
-The following is an illustrative technical flow, not a client screenshot or a deployment topology.
-
 ```mermaid
-flowchart TD
-    N0["Workbook input"]
-    N1["Analysis and mapping preview"]
-    N0 --> N1
-    N2["Validation and backup gate"]
-    N1 --> N2
-    N3["Batched apply and audit"]
-    N2 --> N3
-    N4["Checkout configuration"]
-    N3 --> N4
+flowchart LR
+    P[Partial checkout patch] --> V[Validate complete patch]
+    V --> R[Pure owned-state reduction]
+
+    F[Normalized freight rows] --> N[Validate, deduplicate, order]
+    N --> Q[Freeze preview + predecessor]
+    Q --> G[Guarded merge apply]
+    G --> B[State + backup + audit]
 ```
+
+## Code map
+
+- [`src/CheckoutStateReducer.php`](src/CheckoutStateReducer.php) — pure request/state transition.
+- [`src/FreightPlanService.php`](src/FreightPlanService.php) — freight validation, preview registry, hashing, guarded merge, backup, and audit.
+- [`tests/run.php`](tests/run.php) — focused dependency-free regression suite.
+- [`demo/run.php`](demo/run.php) — successful flows and caught stale/replay failures.
+- [Mechanism contracts](docs/mechanisms.md) — schemas, protocol, trust boundary, failure matrix, and production adapter responsibilities.
+- [Engineering decisions](docs/engineering.md) — why the boundaries matter.
+- [Scope and evidence boundaries](docs/scope.md) — what this public artifact does and does not establish.
 
 ## Evidence and delivery boundary
 
-Implemented checkout remediation and freight-import candidate; the inspected evidence has different validation depths for each module.
+The broader case remains private. This repository combines anonymized technical documentation with a fresh public mechanism demo designed to make selected state-management decisions reviewable. Passing local tests establishes only the behavior of this in-memory demo; it is not evidence of a production database transaction, a completed real-store import, or an order/payment submission.
 
-Recorded local regression evidence covers PHP checkout callbacks, generated JavaScript heading synchronization and PHP syntax. Freight-import source includes staged apply and verification mechanisms; those checks do not establish a completed real-store import or order submission.
-
-## Read more
-
-- [Engineering decisions](docs/engineering.md)
-- [Scope and evidence boundaries](docs/scope.md)
-
-> This repository describes verified implementation work at a technical level. Original source, identities, business data and visual assets are intentionally omitted. It is not an installable application or a claim that the original private implementation is open source.
+> Original source, identities, business data, workbooks, actual rates, domains, paths, visual assets, and deployment details are intentionally omitted.

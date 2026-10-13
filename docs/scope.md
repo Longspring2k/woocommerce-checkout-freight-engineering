@@ -1,23 +1,23 @@
 # Scope and evidence boundaries
 
-## Documented state
+## Public runnable state
 
-Implemented checkout remediation and freight-import candidate; the inspected evidence has different validation depths for each module.
+This repository contains an original synthetic PHP mechanism demo plus anonymized technical documentation. Local tests exercise the partial checkout reducer and the in-memory freight preview/guarded-apply protocol.
 
 ## Evidence basis
 
-Recorded local regression evidence covers PHP checkout callbacks, generated JavaScript heading synchronization and PHP syntax. Freight-import source includes staged apply and verification mechanisms; those checks do not establish a completed real-store import or order submission.
+Passing tests establish the documented behavior of these newly authored classes on the tested PHP runtime. They cover omission versus explicit clear, preservation of unrelated state, owned cleanup, atomic invalid-patch refusal, freight schema and duplicate validation, stable ordering/hash behavior, successful backup/audit creation, and unchanged state after stale/replayed/foreign plan refusal.
 
-The public narrative was prepared against retained implementation and verification artifacts. Those private references are not redistributed. Source inspection, recorded test results, staging observations and production deployment are different levels of evidence; none is silently substituted for another.
+The broader case study remains based on private implementation and verification artifacts. Those materials are not redistributed, and the public demo is not represented as the private production source.
 
 ## Not claimed or distributed
 
-- No production order, payment, freight rate or customer-data claim is made.
-- Original business rules, workbooks, configuration, backups and site-specific code remain private.
-- This is not a complete commerce security audit or a packaged shipping extension.
+- No production order, checkout submission, payment, freight calculation, or completed real-store import is performed.
+- No original client source, identities, domains, paths, workbooks, actual rates, datasets, configuration, credentials, backups, screenshots, or deployment scripts are included.
+- No XLSX parser, WooCommerce hook adapter, persistence layer, database transaction/CAS, cross-process concurrency control, or rollback operator workflow is implemented.
+- The in-memory plan registry assumes trusted code in one PHP process. It is not a hostile-process security boundary.
+- Content hashes provide deterministic identity, not authorization or authenticity.
 
 ## Public repository boundary
 
-Only newly written technical documentation and illustrative diagrams are included. There are no original application source files, datasets, screenshots, deployment scripts, credentials or inherited Git history. No business-performance figures or customer endorsements are asserted.
-
-The repository is intended for technical review of the engineering approach. It makes no grant of rights to the original private implementation or third-party dependencies.
+The public code uses normalized arrays and synthetic integer charge units. It deliberately limits reconciliation to documented merge semantics. Production adapters would own workbook ingestion, operator authorization, WooCommerce request/session integration, schema translation, durable transactional persistence, retention, monitoring, and operational recovery.
